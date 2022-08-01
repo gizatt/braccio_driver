@@ -204,12 +204,13 @@ void setup() {
 
   // Set up Serial comms; using Arduino Due USB port for higher serial bandwidth.
   SerialUSB.begin(115200);
+  /* Don't wait, just start up.
   while (!SerialUSB){
     digitalWrite(LED_BUILTIN, false);
     delay(200);
     digitalWrite(LED_BUILTIN, true);
     delay(200);
-  }
+  } */
   SerialUSB.write("Braccio Driver connected and arm starting up.\n");
 
   // Arm default calibration and setup.
