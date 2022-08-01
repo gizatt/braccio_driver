@@ -11,3 +11,17 @@ A trajectory is specified by a serialized buffer of floating point numbers seria
 <0xFFFFFFFF> <N><binary blob><checksum>
 ```
 After a start of 4 all-one bytes, the first data byte is a uint8 N indicating the number of knots. The next `N*7*4` bytes are a packed array of 32-bit floats, where the first 7 entries are the first knot ([t, m1, m2, ..., m6]), the second 7 are the second knot, etc. Then, a 32-bit checksum (bitwise sum of all bytes in the binary blob).
+
+## Useful robot configurations
+
+### Reaching for a thing
+Pregrasp: [147, 80, 45, 0., 0., 66]
+Grasp: [147, 62, 35, 0., 0., 50]
+Closed: [147, 62, 35, 0., 0., 120]
+
+### Throwing
+Pre-throw neutral: [55, 145, 45, 0, 90, 120]
+Pre-throw extended: [55, 170, 90, 90, 90, 120]
+Post-throw extended: [55, 90, 90, 90, 90, 120]
+(That second joint is the base pitch joint. At 
+135 it's at 45 degrees going up; at 90 it's straight up.)

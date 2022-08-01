@@ -145,7 +145,6 @@ void parse_buffer(){
     for (int i = 0; i < 6; i++){
       qs[i] = q_commanded[i];
     }
-    offset += 7;
     knot_i += 1;
   }
   for (int i = 0; i < num_knots_in_buffer; i++){
