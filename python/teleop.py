@@ -8,7 +8,7 @@ from threading import Lock
 
 from util import pack_trajectory_to_buf
 
-SLEW_TIME = 2.0
+SLEW_TIME = 0.1
 
 if __name__ == "__main__":
     alive = True

@@ -30,20 +30,25 @@ if __name__ == "__main__":
     dat = np.load(throw_traj_file)
     throw_ts = dat["ts"]
     throw_xs = dat["xs"]
+    t_release = dat["t_release"]
     # Convert to degrees and throw out velocities.
     throw_qs = throw_xs[:, :6] * 180. / np.pi
+    # Fix gripper state, which isn't part of trajopt.
+    t_release_offset = 0.2
+    throw_qs[throw_ts < t_release + t_release_offset, 5] = 120 # closed
+    throw_qs[throw_ts >= t_release + t_release_offset, 5] = 50 # open
 
     # Create a move-to-pre-throw trajectory.
-    pregrasp = np.array([147, 80, 45, 0., 0., 66])
-    grasp = np.array([147, 62, 35, 0., 0., 50])
-    closed = np.array([147, 62, 35, 0., 0., 120])
-    pregrasp_closed = np.array([147, 80, 45, 0., 0., 120])
+    pregrasp = np.array([90., 0., 150., 180., 90., 50])
+    grasp = np.array([90., 0., 180., 180., 90., 50])
+    closed = np.array([90., 0., 180., 180., 90., 120])
+    pregrasp_closed = np.array([90., 0., 150., 180., 90., 120])
     prethrow_ts = []
     prethrow_qs = []
-    add_setpoint(prethrow_ts, prethrow_qs, 3., pregrasp)
-    add_setpoint(prethrow_ts, prethrow_qs, 1., grasp)
-    add_setpoint(prethrow_ts, prethrow_qs, 0.5, closed)
-    add_setpoint(prethrow_ts, prethrow_qs, 1., pregrasp_closed)
+    add_setpoint(prethrow_ts, prethrow_qs, 1., pregrasp)
+    add_setpoint(prethrow_ts, prethrow_qs, 0.5, grasp)
+    add_setpoint(prethrow_ts, prethrow_qs, 0.25, closed)
+    add_setpoint(prethrow_ts, prethrow_qs, 0.5, pregrasp_closed)
     prethrow_ts = np.array(prethrow_ts)
     prethrow_qs = np.stack(prethrow_qs, axis=0)
 
