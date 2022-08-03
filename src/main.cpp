@@ -18,7 +18,9 @@ double get_t(){
 const uint8_t MAX_NUM_KNOTS = 128;
 
 // Receive buffer.
-const uint32_t RECV_BUFFER_SIZE = 1 + MAX_NUM_KNOTS * 7 * 4 + 4 + 4;
+// Allocate room for one extra knot, in case we append a start knot
+// to a trajectory that starts at t > 0.
+const uint32_t RECV_BUFFER_SIZE = 1 + (MAX_NUM_KNOTS + 1) * 7 * 4 + 4 + 4;
 uint32_t buffer_index = 0;
 uint8_t serial_recv_buffer[RECV_BUFFER_SIZE];
 
@@ -92,10 +94,10 @@ void update_arm_command(){
 }
 
 
-// Called when buffer has terminated with 4 received zeros in a row.
+// Called when a full buffer has been received.
 // Attempts to parse a piecewise trajectory as described in the README.
 void parse_buffer(){
-  // The first byte should be the # of knots.
+  // The first byte (after 4 bytes of header) should be the # of knots.
   uint8_t num_knots_in_buffer = serial_recv_buffer[4];
   if (num_knots_in_buffer > MAX_NUM_KNOTS){
     SerialUSB.write("Too many knots in message.\n");
@@ -141,7 +143,7 @@ void parse_buffer(){
   // if the first commanded time is not zero.
   float t0 = *(float *)(serial_recv_buffer + 5);
   if (t0 > 1E-3){
-    ts[0] = 0.;
+    ts[0] = t;
     for (int i = 0; i < 6; i++){
       qs[i] = q_commanded[i];
     }
@@ -176,6 +178,7 @@ void handle_serial_char(uint8_t byte) {
     // Messages must start with 0xffffffff; this isn't
     // part of it, so reset the buffer.
     buffer_index = 0;
+    SerialUSB.write("Bad header.");
     return;
   }
 
@@ -189,6 +192,7 @@ void handle_serial_char(uint8_t byte) {
     uint32_t expected_buffer_size = 4 + 1 + num_knots_in_buffer * 7 * 4 + 4 + 4;
     if (buffer_index == expected_buffer_size){
       parse_buffer();
+      SerialUSB.write("Parsed buffer.");
       buffer_index = 0;
     }
   }
