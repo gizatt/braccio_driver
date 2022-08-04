@@ -34,15 +34,17 @@ if __name__ == "__main__":
     # Convert to degrees and throw out velocities.
     throw_qs = throw_xs[:, :6] * 180. / np.pi
     # Fix gripper state, which isn't part of trajopt.
+    # This time offset delays release a little; this
+    # compensates for tracking delay.
     t_release_offset = 0.2
-    throw_qs[throw_ts < t_release + t_release_offset, 5] = 120 # closed
-    throw_qs[throw_ts >= t_release + t_release_offset, 5] = 50 # open
+    throw_qs[throw_ts <= t_release + t_release_offset, 5] = 120 # closed
+    throw_qs[throw_ts > t_release + t_release_offset, 5] = 50 # open
 
     # Create a move-to-pre-throw trajectory.
-    pregrasp = np.array([90., 0., 150., 180., 90., 50])
-    grasp = np.array([90., 0., 180., 180., 90., 50])
-    closed = np.array([90., 0., 180., 180., 90., 120])
-    pregrasp_closed = np.array([90., 0., 150., 180., 90., 120])
+    pregrasp = np.array([91., 90., 175, 175, 91, 70])
+    grasp = np.array([91., 106., 176., 179., 91., 70])
+    closed = np.array([91., 106., 176., 179., 91., 120])
+    pregrasp_closed = np.array([91., 90., 175, 175, 91, 120])
     prethrow_ts = []
     prethrow_qs = []
     add_setpoint(prethrow_ts, prethrow_qs, 1., pregrasp)
@@ -54,7 +56,7 @@ if __name__ == "__main__":
 
     # Glue these trajectories together.
     ts = np.concatenate(
-        [prethrow_ts, throw_ts + prethrow_ts[-1] + 3.], axis=0
+        [prethrow_ts, throw_ts + prethrow_ts[-1] + 1.], axis=0
     )
     qs = np.r_[prethrow_qs, throw_qs]
 
