@@ -25,6 +25,11 @@ def add_setpoint(ts, qs, dt_from_last, q):
 if __name__ == "__main__":
     alive = True
     ser = serial.Serial(port='COM11', baudrate=9600, timeout=.1)
+    time.sleep(0.5)
+
+    # Angle of gripper to open/close
+    open_angle = 80
+    closed_angle = 120
 
     # Load up and prep the actual throw trajectory.
     dat = np.load(throw_traj_file)
@@ -37,42 +42,40 @@ if __name__ == "__main__":
     # This time offset delays release a little; this
     # compensates for tracking delay.
     t_release_offset = 0.2
-    throw_qs[throw_ts <= t_release + t_release_offset, 5] = 120 # closed
-    throw_qs[throw_ts > t_release + t_release_offset, 5] = 50 # open
+    throw_qs[throw_ts <= t_release + t_release_offset, 5] = closed_angle
+    throw_qs[throw_ts > t_release + t_release_offset, 5] = open_angle
 
-    # Create a move-to-pre-throw trajectory.
-    pregrasp = np.array([91., 90., 175, 175, 91, 70])
-    grasp = np.array([91., 106., 176., 179., 91., 70])
-    closed = np.array([91., 106., 176., 179., 91., 120])
-    pregrasp_closed = np.array([91., 90., 175, 175, 91, 120])
-    prethrow_ts = []
-    prethrow_qs = []
-    add_setpoint(prethrow_ts, prethrow_qs, 1., pregrasp)
-    add_setpoint(prethrow_ts, prethrow_qs, 0.5, grasp)
-    add_setpoint(prethrow_ts, prethrow_qs, 0.25, closed)
-    add_setpoint(prethrow_ts, prethrow_qs, 0.5, pregrasp_closed)
-    prethrow_ts = np.array(prethrow_ts)
-    prethrow_qs = np.stack(prethrow_qs, axis=0)
+    # For 3 locations relative to base, grab a thing + throw.
+    for base_angle in [91., 70, 50.]:
+        # Create a move-to-pre-throw trajectory.
+        pregrasp = np.array([base_angle, 90., 175, 175, 91, open_angle])
+        grasp = np.array([base_angle, 106., 176., 179., 91., open_angle])
+        closed = np.array([base_angle, 106., 176., 179., 91., closed_angle])
+        pregrasp_closed = np.array([base_angle, 90., 175, 175, 91, closed_angle])
+        prethrow_ts = []
+        prethrow_qs = []
+        add_setpoint(prethrow_ts, prethrow_qs, 1., pregrasp)
+        add_setpoint(prethrow_ts, prethrow_qs, 0.5, grasp)
+        add_setpoint(prethrow_ts, prethrow_qs, 0.25, closed)
+        add_setpoint(prethrow_ts, prethrow_qs, 0.5, pregrasp_closed)
+        prethrow_ts = np.array(prethrow_ts)
+        prethrow_qs = np.stack(prethrow_qs, axis=0)
 
-    # Glue these trajectories together.
-    ts = np.concatenate(
-        [prethrow_ts, throw_ts + prethrow_ts[-1] + 1.], axis=0
-    )
-    qs = np.r_[prethrow_qs, throw_qs]
+        # Glue these trajectories together.
+        ts = np.concatenate(
+            [prethrow_ts, throw_ts + prethrow_ts[-1] + 1.], axis=0
+        )
+        qs = np.r_[prethrow_qs, throw_qs]
 
-    print(ts)
-    # Wait a bit before sending.
-    time.sleep(0.5)
-
-    ser.write(pack_trajectory_to_buf(ts, qs))
-    ser.write(b"dummy") # Need to write this to "flush" serial? Something weird going on.
-    t_start = time.time()
-    while (time.time() - t_start < ts[-1] + 2.):
-        if (ser.inWaiting() > 0):
-            # read the bytes and convert from binary array to ASCII
-            data_str = ser.read(ser.inWaiting()).decode('ascii') 
-            # print the incoming string without putting a new-line
-            # ('\n') automatically after every print()
-            print(data_str, end='') 
-        time.sleep(0.1)
+        ser.write(pack_trajectory_to_buf(ts, qs))
+        ser.write(b"dummy") # Need to write this to "flush" serial? Something weird going on.
+        t_start = time.time()
+        while (time.time() - t_start < ts[-1] + 0.5):
+            if (ser.inWaiting() > 0):
+                # read the bytes and convert from binary array to ASCII
+                data_str = ser.read(ser.inWaiting()).decode('ascii') 
+                # print the incoming string without putting a new-line
+                # ('\n') automatically after every print()
+                print(data_str, end='') 
+            time.sleep(0.1)
 
