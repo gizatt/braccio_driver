@@ -8,8 +8,6 @@ A trajectory is specified as a list of *knot points* or *knots*, each consisting
 
 The driver code is intended for an Arduino Due; with minor mods it short work on basically any Arduino. (You may need to change "SerialUSB" to "Serial" depending on the Arduino and connection you're using.) It's structured as a [PlatformIO](https://platformio.org/) project.
 
-The `python` folder shows some examples of sending compatible serial commands (using pyserial) to drive the robot. `util.py:pack_trajectory_to_buf` is the meat of the message packing; supply it with a vector of N knot times `ts` and an Nx6 array of joint configurations `qs`, and shove the buffer you get into the serial port, and the robot should do what you want.
-
 ## Serial command spec
 
 A trajectory is specified by a serialized buffer of floating point numbers serialized like:
@@ -18,22 +16,27 @@ A trajectory is specified by a serialized buffer of floating point numbers seria
 ```
 After a start of 4 all-one bytes, the first data byte is a uint8 N indicating the number of knots. The next `N*7*4` bytes are a packed array of 32-bit floats, where the first 7 entries are the first knot ([t, m1, m2, ..., m6]), the second 7 are the second knot, etc. Then, a 32-bit checksum (bitwise sum of all bytes in the binary blob).
 
-## Useful robot configurations
+## Proof of life
 
-These are lists of joint angles for the Braccio using the default calibration (in which [90, 90, 90, 90, 90, 70] points the robot straight up). This is mostly a personal scratchpad.
+The code, as-is, sends ASCII heartbeat strings over serial every second; if you see those, it's working right. When you send a command buffer, it should return an ASCII string confirming its reception, or complaining about one of a large number of possible formatting or encoding problems.
 
-### Reaching for a thing
-Pregrasp: [147, 80, 45, 0., 0., 66]
-Grasp: [147, 62, 35, 0., 0., 50]
-Closed: [147, 62, 35, 0., 0., 120]
+## Python stuff
 
-### Throwing
-Pre-throw neutral: [55, 145, 45, 0, 90, 120]
-Pre-throw extended: [55, 170, 90, 90, 90, 120]
-Post-throw extended: [55, 90, 90, 90, 90, 120]
-(That second joint is the base pitch joint. At 
-135 it's at 45 degrees going up; at 90 it's straight up.)
+A couple of example Python scripts that utilize this driver to make the arm do interesting things are included under the `python` folder. `util.py:pack_trajectory_to_buf` is the meat of the message packing; supply it with a vector of N knot times `ts` and an Nx6 array of joint configurations `qs`, and shove the buffer you get into the serial port, and the robot should do what you want.
+
+- `teleop.py` runs a Matplotlib widget allowing direct teleop of the robot with some sliders.
+- `throw_manual.py` drives the robot through a scripted sequence that picks up an object from in front of it, and then throws it. It generates a throwing trajectoy manually by creating joint angle setpoints around a fully-extended release configuration with the right relative motion to achieve a pretty-close-to-the-practical-joint-velocity-limits throw. I've tuned this to throw a paper airplane pretty well.
+- `throw_trajopt.py` and `throw_plane_trajopt.py` play back trajectories from trajectory optimization to perform different throws. `throw_trajopt.py` picks up objects from three different locations and throws them each in sequence.
+- `test_send_trajectory.py` is some old testing cruft.
+
+### Deps
+
+`pyserial`, `numpy`, `matplotlib`
+
+### Trajectory optimization
+
+The files under `python/trajectories` were generated via a trajectory optimization using Drake, implemented in [this deepnote](https://deepnote.com/workspace/greg-izatt-73314da8-6e78-4e92-a3d0-50c60a42ac40/project/braccioarmtrajopt-7ed10f47-1848-4d65-81c9-53a81d301e31/%2Fcore.629).
 
 ## Other notes
 
-Good Braccio URDF: https://github.com/jonabalzer/braccio_description
+The Braccio URDF included here is modified from the one helpfully provided at https://github.com/jonabalzer/braccio_description. It's the URDF used for trajectory optimization, and seems to be a good match for the real robot.

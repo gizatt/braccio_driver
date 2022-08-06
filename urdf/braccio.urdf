@@ -1,0 +1,244 @@
+<!--
+ Modified from https://github.com/jonabalzer/braccio_description
+ by gizatt, Aug 2022.
+-->
+<?xml version="1.0"?>
+<robot name="visual">
+
+  <material name="gray">
+    <color rgba="0.3 0.3 0.3 1"/>
+  </material>
+  <material name="orange">
+    <color rgba="0.8 0.084 0 1"/>
+  </material>
+  <material name="white">
+    <color rgba="0.8 0.8 0.8 1"/>
+  </material>
+
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="0.15 0.15 .05"/>
+      </geometry>
+      <material name="gray"/> 
+      <origin rpy="0 0 0" xyz="0 0 -0.025"/>
+    </visual>
+    <inertial>
+      <mass value=".1"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.0001" ixy="0" ixz="0" iyy="0.0001" iyz="0" izz="0.0001"/>
+    </inertial>
+  </link>
+
+  <link name="link1">
+    <visual>
+      <geometry>
+        <mesh filename="meshes/base.obj"/>
+      </geometry>
+      <material name="orange"/> 
+    </visual>
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.00001" ixy="0" ixz="0" iyy="0.00001" iyz="0" izz="0.00001"/>
+    </inertial>
+  </link>
+
+  <link name="link2">
+    <visual>
+      <geometry>
+        <mesh filename="meshes/shoulder.obj"/>
+      </geometry>
+      <material name="orange"/>
+      <origin rpy="0 0 0" xyz="0 0 -0.0505"/> 
+    </visual>
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.00001" ixy="0" ixz="0" iyy="0.00001" iyz="0" izz="0.00001"/>
+    </inertial>
+  </link>
+
+  <link name="link3">
+    <visual>
+      <geometry>
+        <mesh filename="meshes/elbow.obj"/>
+      </geometry>
+      <material name="orange"/>
+      <origin rpy="0 0 0" xyz="0 0 -0.1705"/> 
+    </visual>
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.00001" ixy="0" ixz="0" iyy="0.00001" iyz="0" izz="0.00001"/>
+    </inertial>
+  </link>
+
+  <link name="link4">
+    <visual>
+      <geometry>
+        <mesh filename="meshes/wrist_pitch.obj"/>
+      </geometry>
+      <material name="orange"/>
+      <origin rpy="0 0 0" xyz="0 0 -0.2905"/> 
+    </visual>
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.00001" ixy="0" ixz="0" iyy="0.00001" iyz="0" izz="0.00001"/>
+    </inertial>
+  </link>
+  
+  <link name="link5">
+    <visual>
+      <geometry>
+        <mesh filename="meshes/wrist_roll.obj"/>
+      </geometry>
+      <material name="white"/>
+      <origin rpy="0 0 0" xyz="0 0 -0.3505"/> 
+    </visual>
+    <inertial>
+      <mass value="0.1"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.00001" ixy="0" ixz="0" iyy="0.00001" iyz="0" izz="0.00001"/>
+    </inertial>
+  </link>
+
+  <link name="gripper_base">
+    <visual>
+      <geometry>
+        <mesh filename="meshes/gripper_base.obj"/>
+      </geometry>
+      <material name="white"/>
+      <origin rpy="0 0 0" xyz="0 0 -0.357"/> 
+    </visual>
+    <inertial>
+      <mass value="0.01"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.00001" ixy="0" ixz="0" iyy="0.00001" iyz="0" izz="0.00001"/>
+    </inertial>
+  </link>
+
+  <link name="gripper_fix">
+    <visual>
+      <geometry>
+        <mesh filename="meshes/gripper_fix.obj"/>
+      </geometry>
+      <material name="white"/>
+      <origin rpy="0 0 0" xyz="0 0 -0.36399"/> 
+    </visual>
+    <inertial>
+      <mass value="0.01"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.00001" ixy="0" ixz="0" iyy="0.00001" iyz="0" izz="0.00001"/>
+    </inertial>
+  </link>
+
+  <link name="gripper_movable">
+    <visual>
+      <geometry>
+        <mesh filename="meshes/gripper_movable.obj"/>
+      </geometry>
+      <material name="white"/>
+      <origin rpy="0 0 0" xyz="-0.01559 0 -0.36399"/> 
+    </visual>
+    <inertial>
+      <mass value="0.01"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.00001" ixy="0" ixz="0" iyy="0.00001" iyz="0" izz="0.00001"/>
+    </inertial>
+  </link>
+
+  <joint name="base" type="revolute">
+    <axis xyz="0 0 -1"/>
+    <limit effort="10.0" lower="0" upper="3.14" velocity="4.0"/>
+    <origin rpy="0 0 1.57" xyz="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="link1"/>
+  </joint>
+
+  <joint name="shoulder" type="revolute">
+    <axis xyz="0 1 0"/>
+    <limit effort="10.0" lower="0" upper="3.14" velocity="4.0"/>
+    <origin rpy="0 -1.57 0" xyz="0 0 0.0505"/>   
+    <parent link="link1"/>
+    <child link="link2"/>
+  </joint>
+
+   <joint name="elbow" type="revolute">
+    <axis xyz="0 1 0"/>
+    <limit effort="10.0" lower="0" upper="3.14" velocity="4.0"/>
+    <origin rpy="0 -1.57 0" xyz="0 0 0.1205"/>
+    <parent link="link2"/>
+    <child link="link3"/>
+  </joint>
+
+  <joint name="wrist_pitch" type="revolute">
+    <axis xyz="0 1 0"/>
+    <limit effort="10.0" lower="0" upper="3.14" velocity="4.0"/>
+    <origin rpy="0 -1.57 0" xyz="0 0 0.1205"/>
+    <parent link="link3"/>
+    <child link="link4"/>
+  </joint>
+
+  <joint name="wrist_roll" type="revolute">
+    <axis xyz="0 0 -1"/>
+    <limit effort="10.0" lower="0" upper="3.14" velocity="4.0"/>
+    <origin rpy="0 0 1.57" xyz="0 0.0 0.06"/>
+    <parent link="link4"/>
+    <child link="link5"/>
+  </joint>
+
+  <joint name="gripper_base" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0.0 0.0065"/>
+    <parent link="link5"/>
+    <child link="gripper_base"/>
+  </joint>
+
+  <joint name="gripper_fix" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0.0 0.007"/>
+    <parent link="gripper_base"/>
+    <child link="gripper_fix"/>
+  </joint>
+
+  <joint name="gripper_movable" type="revolute">
+    <axis xyz="-1 0 0"/>
+    <limit effort="1000.0" lower="0.17453292519943295" upper="1.2740903539558606" velocity="4.0"/>
+    <origin rpy="0 0 0" xyz="0.01559 0 0.007"/>
+    <parent link="gripper_base"/>
+    <child link="gripper_movable"/>
+  </joint>
+  
+  
+  <transmission name="base" type="pr2_mechanism_model/SimpleTransmission">
+    <actuator name="base_motor"/>
+    <joint name="base"/>
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+  <transmission name="shoulder_roll" type="pr2_mechanism_model/SimpleTransmission">
+    <actuator name="shoulder_motor"/>
+    <joint name="shoulder"/>
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+  <transmission name="elbow" type="pr2_mechanism_model/SimpleTransmission">
+    <actuator name="elbow_motor"/>
+    <joint name="elbow"/>
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+  <transmission name="wrist_pitch" type="pr2_mechanism_model/SimpleTransmission">
+    <actuator name="wrist_pitch_motor"/>
+    <joint name="wrist_pitch"/>
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+  <transmission name="wrist_roll" type="pr2_mechanism_model/SimpleTransmission">
+    <actuator name="wrist_roll_motor"/>
+    <joint name="wrist_roll"/>
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+  <transmission name="gripper_movable" type="pr2_mechanism_model/SimpleTransmission">
+    <actuator name="gripper_movable_motor"/>
+    <joint name="gripper_movable"/>
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+
+</robot>
