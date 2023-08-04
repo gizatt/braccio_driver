@@ -2,7 +2,7 @@ import numpy as np
 import serial
 import time
 
-from .util import pack_trajectory_to_buf
+from util import pack_trajectory_to_buf
 
 zero_config = np.array([90., 90., 90., 90., 90., 70.])
 def get_test_trajectory():
@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     while (1):
         try:
-            ser = serial.Serial(port='COM11', baudrate=9600, timeout=.1)
+            ser = serial.Serial(port='COM4', baudrate=9600, timeout=.1)
 
             last_send_time = time.time() - 100
             while (1):

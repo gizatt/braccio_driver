@@ -12,7 +12,7 @@ SLEW_TIME = 0.1
 
 if __name__ == "__main__":
     alive = True
-    ser = serial.Serial(port='COM11', baudrate=9600, timeout=.1)
+    ser = serial.Serial(port='COM4', baudrate=9600, timeout=.1)
 
     # Create the figure with sliders that we'll manipulate.
     fig = plt.figure()
