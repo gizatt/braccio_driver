@@ -46,7 +46,7 @@ def get_joint_angles(throw_yaw: float, throw_elevation: float, pin_to_hand_dista
     q[4] = np.deg2rad(90.)
     q[5] = np.deg2rad(40.)
     # Pass yaw through
-    q[0] = np.deg2rad(180.) - throw_yaw
+    q[0] = throw_yaw
     # Adjust for extra theta_release in the desired pitch, remembering that +90 is straight up, and +180 faces
     # "forward".
     q[1] = np.pi - throw_elevation + theta_release
@@ -97,7 +97,7 @@ if __name__ == "__main__":
     theta_releases = theta_release_center + np.linspace(-np.pi/4., np.pi/8, len(ts))
     for theta_release in theta_releases:
         qs.append(
-            get_joint_angles(np.deg2rad(args.throw_yaw), np.deg2rad(args.throw_elevation),
+            get_joint_angles(np.deg2rad(180.) - np.deg2rad(args.throw_yaw), np.deg2rad(args.throw_elevation),
                              args.pin_to_hand_distance, theta_release)
         )
 
