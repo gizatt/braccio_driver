@@ -129,6 +129,7 @@ class RobotController():
     def __init__(self, port: str, target_tracker: TargetTracker):
         self.last_update_t = time.time() + 1.
         self.target_tracker = target_tracker
+        self.seek_direction = 1.
 
         if port is None:
             print("No port supplied, running with no robot.")
@@ -173,8 +174,7 @@ class RobotController():
 
         t = time.time()
         if t - self.last_update_t > self.UPDATE_PERIOD:
-            self.last_update_t = t
-
+            seek_time = self.UPDATE_PERIOD
             if self.tracking_mode == "auto":
                 if self.target_tracker.tracked_pt is not None:
                     print("In auto mode")
@@ -183,20 +183,32 @@ class RobotController():
                     self.target_q[0] += fractional_image_err * 0.2
                     target_elevation, pin_to_hand_distance = self.get_target_elevation_and_pin_to_hand_distance()
                     self.target_q = get_joint_angles(self.target_q[0], target_elevation, pin_to_hand_distance, -3.*np.pi/8.)
-                                    
                     print(self.target_tracker.tracked_pt)
                 else:
-                    print("No lock, auto mode doing nothing.")
-
-            self.go_to_q(self.UPDATE_PERIOD, self.target_q)
+                    print("No lock, going to seek.")
+                    self.tracking_mode = "seek"
+            elif self.tracking_mode == "seek":
+                if self.target_tracker.tracked_pt is not None:
+                    self.tracking_mode = "auto"
+                else:
+                    self.target_q[0] += self.seek_direction * np.pi / 8
+                    if self.target_q[0] > np.pi:
+                        self.seek_direction = -1.
+                    elif self.target_q[0] < 0.:
+                        self.seek_direction = 1.
+                    seek_time = 2. * np.pi/8.
+                
+            self.go_to_q(seek_time, self.target_q)
+            self.last_update_t = t + seek_time - self.UPDATE_PERIOD
 
     def get_target_elevation_and_pin_to_hand_distance(self):
         if self.target_tracker.median_depth is None:
             return np.deg2rad(60), 0.2
         
         #elevation = np.deg2rad( - 15 * min(3., self.target_tracker.median_depth) / 3.) # at 3meters, 45 degrees
-        elevation = np.deg2rad(30.)
-        speed = 0.23#  + 0.05 * min(3., self.target_tracker.median_depth) / 3.
+        fractional_elevation_from_center = -(self.target_tracker.tracked_pt[1] - 100) / 320.
+        elevation = np.deg2rad(30. + fractional_elevation_from_center * 30)
+        speed = 0.22 + 0.02 * np.clip(self.target_tracker.median_depth / 3., 0., 1.)
 
         print(f"At range {self.target_tracker.median_depth}, using elevation {elevation} and pin-to-hand {speed}")
         return elevation, speed
@@ -242,6 +254,8 @@ class RobotController():
             print(f"Tracking reset")
         elif event.key == "t": # spacebar swaps tracking modes
             if self.tracking_mode == "auto":
+                self.tracking_mode = "seek"
+            elif self.tracking_mode == "seek":
                 self.tracking_mode = "manual"
             else:
                 self.tracking_mode = "auto"
